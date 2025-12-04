@@ -113,6 +113,41 @@
 }
 
 
+canvas {
+            display: block;
+            /* Z-Index Change: Increased to 10000 to ensure it is always on top */
+            
+            position: fixed;
+            top: 0;
+            left: 0;
+            /* Allow clicks to pass through */
+            pointer-events: none;
+        }
+
+        .info-box {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 10px 20px;
+            background-color: rgba(0, 0, 0, 0.4); 
+            color: #fff; 
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            /* Z-Index Change: Increased to 10001 to keep it above the canvas */
+            box-shadow: 0 0 10px rgba(255, 100, 200, 0.5); 
+            text-align: center;
+            z-index: 10001;
+            backdrop-filter: blur(2px);
+            -webkit-backdrop-filter: blur(2px);
+            font-weight: 600;
+        }
+
+   
+
+
+
+
 
 
 
@@ -159,6 +194,8 @@ input, textarea {
 html { font-family: var(--ff-poppins); }
 
 body { background: var(--smoky-black); }
+
+
 
 
 
@@ -1671,6 +1708,7 @@ textarea.form-input::-webkit-resizer { display: none; }
     --shadow-3: 0 16px 40px hsla(0, 0%, 0%, 0.125);
 
   }
+
 
 
 

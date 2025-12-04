@@ -161,5 +161,182 @@ for (let i = 0; i < navigationLinks.length; i++) {
 
 /****Testing code */
 
+ // --- Firebase Configuration (Required for environment) ---
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+
+        // --- Canvas Setup ---
+        const canvas = document.getElementById('firecrackerCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let width = window.innerWidth;
+        let height = window.innerHeight;
+        canvas.width = width;
+        canvas.height = height;
+
+        // Resize handler
+        window.addEventListener('resize', () => {
+            width = window.innerWidth;
+            height = window.innerHeight;
+            canvas.width = width;
+            canvas.height = height;
+        });
+
+        // Mouse position tracker
+        const mouse = { x: width / 2, y: height / 2 };
+        document.addEventListener('mousemove', (e) => {
+            mouse.x = e.clientX;
+            mouse.y = e.clientY;
+        });
+        
+        // --- Neon Line Drawing Logic ---
+        const points = [];
+        const MAX_POINTS = 50; 
+        let globalHue = 0; 
+
+        // --- Firecracker Particle Class ---
+        class Particle {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                // Generate a random angle for straight line movement
+                const angle = Math.random() * Math.PI * 2;
+                // Moderate speed for the burst (slower than the initial version)
+                const speed = Math.random() * 4 + 2; 
+
+                this.vx = Math.cos(angle) * speed;
+                this.vy = Math.sin(angle) * speed;
+
+                this.life = 45; // Short life for a quick burst
+                this.maxLife = this.life;
+                this.size = Math.random() * 2 + 1; 
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                
+                // Rapidly slow down (friction)
+                this.vx *= 0.93; 
+                this.vy *= 0.93;
+
+                this.life--;
+            }
+
+            draw() {
+                const opacity = this.life / this.maxLife;
+
+                ctx.save();
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2, false);
+                
+                // Pure white color with fading opacity
+                ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`; 
+                ctx.shadowColor = 'rgba(255, 255, 255, 1)';
+                ctx.shadowBlur = 5; 
+                ctx.fill();
+                ctx.closePath();
+                ctx.restore();
+            }
+        }
+        
+        // Array to hold the firecracker particles
+        const sparkParticles = [];
+
+        /**
+         * Triggers a burst of white particles at the given coordinates.
+         */
+        function triggerFirecrackerBurst(x, y) {
+            const burstCount = Math.floor(Math.random() * 15) + 20; 
+            for (let i = 0; i < burstCount; i++) {
+                sparkParticles.push(new Particle(x, y));
+            }
+        }
+        
+        // Attach the burst function to the click event
+        document.addEventListener('click', () => {
+            triggerFirecrackerBurst(mouse.x, mouse.y);
+        });
+
+        /**
+         * Draws the continuous, glowing neon line.
+         */
+        function drawNeonLine() {
+            if (points.length < 2) return;
+
+            ctx.save();
+            
+            for (let i = 1; i < points.length; i++) {
+                const p1 = points[i - 1];
+                const p2 = points[i];
+
+                const ageRatio = i / points.length;
+                const opacity = ageRatio * 0.9; 
+                const lineWidth = 3 + 4 * ageRatio; 
+
+                const hue = p1.hue; 
+                const color = `hsla(${hue}, 100%, 70%, ${opacity})`;
+
+                ctx.beginPath();
+                ctx.moveTo(p1.x, p1.y);
+                ctx.lineTo(p2.x, p2.y);
+                
+                ctx.strokeStyle = color;
+                ctx.lineWidth = lineWidth;
+                
+                ctx.shadowColor = `hsla(${hue}, 100%, 50%, 1)`;
+                ctx.shadowBlur = 18; 
+                
+                ctx.stroke();
+                ctx.closePath();
+            }
+            
+            ctx.restore(); 
+        }
+
+        /**
+         * Updates and draws all white spark particles.
+         */
+        function updateAndDrawSparks() {
+            for (let i = sparkParticles.length - 1; i >= 0; i--) {
+                const p = sparkParticles[i];
+                p.update();
+                p.draw();
+
+                if (p.life <= 0) {
+                    sparkParticles.splice(i, 1);
+                }
+            }
+        }
 
 
+        // --- Main Animation Loop ---
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // 1. Clear the canvas with low opacity black for the trailing/fading effect
+            // A higher opacity here prevents the white sparks from leaving too long a trail.
+            ctx.fillStyle = 'rgba(13, 13, 26, 0.2)'; 
+            ctx.fillRect(0, 0, width, height);
+
+            // 2. Neon Line Logic
+            points.push({ 
+                x: mouse.x, 
+                y: mouse.y, 
+                hue: globalHue 
+            });
+            globalHue = (globalHue + 2) % 360;
+            if (points.length > MAX_POINTS) {
+                points.shift(); 
+            }
+            
+            // 3. Draw the neon line
+            drawNeonLine();
+            
+            // 4. Update and Draw the white firecracker sparks
+            updateAndDrawSparks();
+        }
+
+        // Start the animation loop when the window is loaded
+        window.onload = function () {
+            animate();
+        }
