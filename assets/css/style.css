@@ -17,6 +17,7 @@
 
 :root {
 
+  
   /**
    * colors
    */
@@ -110,6 +111,8 @@
   --transition-2: 0.5s ease-in-out;
 
 }
+
+
 
 
 
@@ -1949,6 +1952,10 @@ textarea.form-input::-webkit-resizer { display: none; }
 @keyframes fade-in {
   to { opacity: 1; }
 } */
+
+
+
+/* Define initial fallback values for CSS variables */
 
 
 
